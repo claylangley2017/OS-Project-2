@@ -68,8 +68,8 @@ public class Simulator
 	public static void main(String[] args) 
 	{
 		Simulator s = new Simulator( );
-		s.run();
-		//s.testSuite();
+		//s.run();
+		s.testSuite();
 	}
 	
 	//Run all the requested tests in one big group to avoid recoding after each test
@@ -277,7 +277,7 @@ public class Simulator
 					}
 					
 			}
-			
+		
 			quantumTime++;
 			time++;
 		}
