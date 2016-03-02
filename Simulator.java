@@ -25,25 +25,25 @@ public class Simulator
 	private int quantumTime;
 	
 	// END_TIME indicates how long the simulation will run.
-	private int END_TIME = 300;
+	private int END_TIME = 200;
 	
 	// PROC_ARRIVE_PERCENT indicates the percent chance that a new process
 	// will arrive to run on the CPU at any given time unit.
-	private int PROC_ARRIVE_PERCENT = 50;
+	private int PROC_ARRIVE_PERCENT = 35;
 	
 	// PROC_MIN_LENGTH is the minimum length that a process can be.
-	private int PROC_MIN_LENGTH = 6;
+	private int PROC_MIN_LENGTH = 5;
 	
 	// PROC_MAX_LENGTH is the maximum length that a process can be.
-	private int PROC_MAX_LENGTH = 15;
+	private int PROC_MAX_LENGTH = 9;
 	
 	// Quantum for the algorithms that need it
-	private int TIME_QUANTUM = 2;
+	private static int TIME_QUANTUM = 3;
 	
 	// SCHEDULING_ALGORITHM indicates which algorithm the simulation
 	// will be using. Options are "FIFO", "SJF", "STCF", "RR", and
 	// "MLFQ".
-	private String SCHEDULING_ALGORITHM = "STCF";
+	private String SCHEDULING_ALGORITHM = "RR";
 	
 	/**
 	 * The constructor for the Simulator class. Everything starts as
@@ -175,7 +175,7 @@ public class Simulator
 	 */
 	public Process select(ArrayList<Process> ready) {
 		if (ready.size() > 0) {
-			if(SCHEDULING_ALGORITHM == "FIFO") {
+			if(SCHEDULING_ALGORITHM == "FIFO" || SCHEDULING_ALGORITHM == "RR") {
 				Process temp = ready.get(0);
 				ready.remove(0);
 				return temp;
@@ -185,7 +185,7 @@ public class Simulator
 				Process shortest = ready.get(0);
 				int index = 0;
 				for (int i = 1; i < ready.size(); i++) {
-					if (shortest.getLength() > ready.get(i).getLength()) {
+					if (shortest.getLength() >= ready.get(i).getLength()) {
 						shortest = ready.get(i);
 						index = i;
 					}
@@ -239,6 +239,18 @@ public class Simulator
 				procTime = r.nextInt( PROC_MAX_LENGTH - PROC_MIN_LENGTH + 1 ) + PROC_MIN_LENGTH;
 				addProcess( s, time, procTime );
 			}
+			/*if (time == 0) {
+				addProcess("AA", time, 7);
+			}
+			else if (time == 2) {
+				addProcess("BB", time, 4);
+			}
+			else if (time == 3) {
+				addProcess("CC", time, 8);
+			}
+			else if(time == 6) {
+				addProcess("DD", time, 5);
+			}*/
 
 			// Increment the time on the CPU.
 			temp = cpu1.tick( time );
@@ -256,16 +268,17 @@ public class Simulator
 				cpu1.begin( temp, time );
 				quantumTime = 0;
 			}
-			else if (SCHEDULING_ALGORITHM.equals("RR") || SCHEDULING_ALGORITHM.equals("MLFQ") || SCHEDULING_ALGORITHM.equals("STCF")) {
-					if( quantumTime % TIME_QUANTUM == 0) {
+			else if (SCHEDULING_ALGORITHM.equals("RR") || SCHEDULING_ALGORITHM.equals("MLFQ") || SCHEDULING_ALGORITHM.equals("STCF")) {	
+				if(quantumTime % TIME_QUANTUM == 0) {
 						ready.add(cpu1.clearCPU());
 						temp = select(ready);
 						cpu1.begin(temp, time);
+						quantumTime = 0;
 					}
 					
-					quantumTime++;
 			}
 			
+			quantumTime++;
 			time++;
 		}
 		
