@@ -38,7 +38,7 @@ public class Simulator
 	private int PROC_MAX_LENGTH = 9;
 	
 	// Quantum for the algorithms that need it
-	private static int TIME_QUANTUM = 3;
+	private int TIME_QUANTUM = 3;
 	
 	// SCHEDULING_ALGORITHM indicates which algorithm the simulation
 	// will be using. Options are "FIFO", "SJF", "STCF", "RR", and
@@ -79,11 +79,10 @@ public class Simulator
 		if (SCHEDULING_ALGORITHM.equals("FIFO") || SCHEDULING_ALGORITHM.equals("SJF") 
 				|| SCHEDULING_ALGORITHM.equals("STCF") || SCHEDULING_ALGORITHM.equals("PS")) {
 			
-			results = new String[18][4];
+			results = new String[18][7];
 			int testing = 0;
 			for (PROC_ARRIVE_PERCENT = 20; PROC_ARRIVE_PERCENT < 81; PROC_ARRIVE_PERCENT += 30) {
 				System.out.println("% arriving: " + PROC_ARRIVE_PERCENT);
-				String parameters = "% arriving: " + PROC_ARRIVE_PERCENT + ", ";
 				PROC_MIN_LENGTH = 2;
 				PROC_MAX_LENGTH = 3;
 				
@@ -92,18 +91,22 @@ public class Simulator
 					PROC_MAX_LENGTH += ((2 * i) + 2);
 					System.out.println("\n Min process length: " + PROC_MIN_LENGTH);
 					System.out.println("Max process length: " + PROC_MAX_LENGTH);
-					String parametersTwo = parameters + "Process length: " + PROC_MIN_LENGTH + "-" + PROC_MAX_LENGTH + ", ";
 					
 					for (END_TIME = 100; END_TIME < 251; END_TIME += 150) {
 						System.out.println("\n End time: " + END_TIME);
-						String parametersThree = parametersTwo + "End time: " + END_TIME;
 						ready.clear();
 						finished.clear();
 						cpu1 = new CPU( );
 						time = 0;
 						
-						results[testing] = this.run();
-						results[testing][3] = parametersThree;
+					    String[] temp = this.run();
+						results[testing][0] = temp[0];
+						results[testing][1] = temp[1];
+						results[testing][2] = temp[2];
+						results[testing][3] = String.valueOf(PROC_ARRIVE_PERCENT);
+						results[testing][4] = PROC_MIN_LENGTH + "-" + PROC_MAX_LENGTH;
+						results[testing][5] = "NA";
+						results[testing][6] = String.valueOf(END_TIME);
 						testing++;
 					}
 				}
@@ -112,11 +115,10 @@ public class Simulator
 		
 		//If algorithm DOES need a quantum
 		else if (SCHEDULING_ALGORITHM.equals("RR") || SCHEDULING_ALGORITHM.equals("MLFQ")) {
-			results = new String[36][4];
+			results = new String[36][7];
 			int testing = 0;
 			for (PROC_ARRIVE_PERCENT = 20; PROC_ARRIVE_PERCENT < 81; PROC_ARRIVE_PERCENT += 30) {
 				System.out.println("% arriving: " + PROC_ARRIVE_PERCENT);
-				String parameters = "% arriving: " + PROC_ARRIVE_PERCENT + ", ";
 				PROC_MIN_LENGTH = 2;
 				PROC_MAX_LENGTH = 3;
 				
@@ -125,32 +127,37 @@ public class Simulator
 					PROC_MAX_LENGTH += ((2 * i) + 2);
 					System.out.println("\n Min process length: " + PROC_MIN_LENGTH);
 					System.out.println("Max process length: " + PROC_MAX_LENGTH);
-					String parametersTwo = parameters + "Process length: " + PROC_MIN_LENGTH + "-" + PROC_MAX_LENGTH + ", ";
 					
 					for (TIME_QUANTUM = 2; TIME_QUANTUM < 6; TIME_QUANTUM += 3) {
 						System.out.println("Time quantum: " + TIME_QUANTUM);
-						String parametersThree = parametersTwo + "Quantum: " + TIME_QUANTUM + ", ";
 						
 						for (END_TIME = 100; END_TIME < 251; END_TIME += 150) {
 							System.out.println("\n End time: " + END_TIME);
-							String parametersFour = parametersThree + "End time: " + END_TIME;
+
 							ready.clear(); 
 							finished.clear();
 							cpu1 = new CPU();
 							time = 0;
 							
-							results[testing] = this.run();
-							results[testing][3] = parametersFour;
+						    String[] temp = this.run();
+							results[testing][0] = temp[0];
+							results[testing][1] = temp[1];
+							results[testing][2] = temp[2];
+							results[testing][3] = String.valueOf(PROC_ARRIVE_PERCENT);
+							results[testing][4] = PROC_MIN_LENGTH + "-" + PROC_MAX_LENGTH;
+							results[testing][5] = String.valueOf(TIME_QUANTUM);
+							results[testing][6] = String.valueOf(END_TIME);
 							testing++;
 						}
 					}
 				}
 			}
 		}
+						//11             17              15            11             25                       20              21
+		System.out.println("% Arriving | Process Length | Time Quantum | End Time | # Unfinished Processes | AVG Response Time | AVG Turnaround Time");
 		for (String[] s: results) {
+			System.out.format("%11s %16s %14s %10s %24s %19s %20s", s[3], s[4], s[5], s[6], s[0], s[1], s[2]);
 			System.out.println();
-			System.out.println("Parameters: " + s[3]);
-			System.out.println("# of unfinished processes: " + s[0] + ",      average response time: " + s[1] + ",      average turnaround time: " + s[2]);
 		}
 	}
 
@@ -185,7 +192,7 @@ public class Simulator
 				Process shortest = ready.get(0);
 				int index = 0;
 				for (int i = 1; i < ready.size(); i++) {
-					if (shortest.getLength() >= ready.get(i).getLength()) {
+					if (shortest.getTimeLeft() >= ready.get(i).getTimeLeft()) {
 						shortest = ready.get(i);
 						index = i;
 					}
